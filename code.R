@@ -20,13 +20,16 @@ library(data.table)
 #Merging elements.txt with NBS.csv
 BPTNA<-merge(G,dd,by="ElementSymbol",all=T)
 BPTNA<-data.table(BPTNA)
+
 #Removing NA and div/0 values from table
 BPTT<-BPTNA[!is.na(BPTNA$TC),]
 BPTT<-BPTT[!is.na(BPTT$dGmCl),]
 BPTT<-BPTT[BPTT$dGmCl!="#DIV/0!",]
+
 ##TEMPERATURE SETTING
 BPT<-BPTT[BPTT$TK=="1223",]
 BPT$dGmClNo<-as.numeric(as.character(BPT$dGmCl))
+
 ##ELEMENTAL REFERENCE SPECIES (i.e. SUBSTRATE SPECIES)
 BPT$ELdGmCl<-BPT$dGmClNo-min(BPT[ElementSymbol=="Fe",]$dGmClNo)
 
@@ -34,9 +37,7 @@ BPT$ELdGmCl<-BPT$dGmClNo-min(BPT[ElementSymbol=="Fe",]$dGmClNo)
 #For each BPT$ElementSymbol calculate minimum BPT$dGmCl
 StBPT<-BPT[ , .SD[which.min(ELdGmCl)], by = ElementSymbol]
 
-colors<-colors <- colorRampPalette(c("blue", "green", "yellow", "red"))(68)
-N <- nlevels(StBPT$ELdGmCl)
-
+#Building the graphic
 ggplot(StBPT, aes(Column, -Row)) + 
         geom_tile(aes(fill=cut(ELdGmCl, c(-Inf, -1, 1, Inf))),color="black") +
         scale_fill_manual(name = "dGmCl of EOI",

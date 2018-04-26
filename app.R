@@ -4,6 +4,7 @@ library(ggplot2)
 library(httr)
 library(data.table)
 
+#Import periodic table map
 dd <- read.csv("elements.txt", sep=",", header=TRUE)
 
 decompose <- function(x) {
@@ -17,6 +18,7 @@ decompose <- function(x) {
         do.call(rbind, dx)
 }
 
+#Import free energy data for elements
 G<-read.csv("NBS Thermodynamic Values for Metal Chlorides at Various Temperatures 1.csv")
 
 
@@ -28,18 +30,18 @@ BPTT<-BPTNA[!is.na(BPTNA$TC),]
 BPTT<-BPTT[!is.na(BPTT$dGmCl),]
 BPTT<-BPTT[BPTT$dGmCl!="#DIV/0!",]
 
-
+##ShinyAPP
 ui<-fluidPage(
         selectInput("temperature",
                 label = "Temperature",
                 c(298, 600, 800, 1000, 1223, 1500)),
-        selectizeInput("element",
-                    label = "Element",
-                    c("H","Fe")),
+        selectInput("element",
+                label = "Element",
+                choices = BPT$ElementSymbol),
         actionButton("go",
-                     label  = "Update"),
+                label  = "Update"),
         plotOutput("PT")
-        )
+)
 
 server <- function(input, output) {
         data<-eventReactive(input$go,{
@@ -51,24 +53,21 @@ server <- function(input, output) {
                 #For each BPT$ElementSymbol calculate minimum BPT$dGmCl
                 StBPT<-BPT[ , .SD[which.min(ELdGmCl)], by = ElementSymbol]
         })
-colors<-colors <- colorRampPalette(c("blue", "green", "yellow", "red"))(68)
-N <- nlevels(StBPT$ELdGmCl)
-
-output$PT<-renderPlot({        
-        ggplot(data(), aes(Column, -Row)) + 
-                geom_tile(aes(fill=cut(ELdGmCl, c(-Inf, -1, 1, Inf))),color="black") +
-                scale_fill_manual(name = "dGmCl of EOI",
-                                  values = c("(-Inf,-1]" = "green","(-1,1]" = "yellow","(1, Inf]" = "purple"),
-                                  labels = c("Deposit on EOI", "EOI", "EOI will move to"))+
-                geom_text(aes(label=ElementSymbol))+
-                geom_text(aes(label=format(ELdGmCl/1000,digits=2)),vjust=3,hjust=.5,size=2.4)+
-                geom_text(aes(label=Species),vjust=-2,hjust=.5,size=2.4)+
-                labs(x="",y="")+
-                theme(
-                        axis.text.x = element_blank(),
-                        axis.text.y = element_blank(),
-                        axis.ticks = element_blank())
-})
+        output$PT<-renderPlot({        
+                ggplot(data(), aes(Column, -Row)) + 
+                        geom_tile(aes(fill=cut(ELdGmCl, c(-Inf, -1, 1, Inf))),color="black") +
+                        scale_fill_manual(name = "dGmCl of EOI",
+                                          values = c("(-Inf,-1]" = "green","(-1,1]" = "yellow","(1, Inf]" = "purple"),
+                                          labels = c("Deposit on EOI", "EOI", "EOI will move to"))+
+                        geom_text(aes(label=ElementSymbol))+
+                        geom_text(aes(label=format(ELdGmCl/1000,digits=2)),vjust=3,hjust=.5,size=2.4)+
+                        geom_text(aes(label=Species),vjust=-2,hjust=.5,size=2.4)+
+                        labs(x="",y="")+
+                        theme(
+                                axis.text.x = element_blank(),
+                                axis.text.y = element_blank(),
+                                axis.ticks = element_blank())
+        })
 }
 
 shinyApp(ui=ui, server=server)
