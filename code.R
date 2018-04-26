@@ -12,16 +12,15 @@ decompose <- function(x) {
         do.call(rbind, dx)
 }
 
-test_input <- c("H2O","CH4")
-decompose(test_input)
-
 G<-read.csv("NBS Thermodynamic Values for Metal Chlorides at Various Temperatures 1.csv")
-
 
 library(ggplot2)
 library(data.table)
+
+#Merging elements.txt with NBS.csv
 BPTNA<-merge(G,dd,by="ElementSymbol",all=T)
 BPTNA<-data.table(BPTNA)
+#Removing NA and div/0 values from table
 BPTT<-BPTNA[!is.na(BPTNA$TC),]
 BPTT<-BPTT[!is.na(BPTT$dGmCl),]
 BPTT<-BPTT[BPTT$dGmCl!="#DIV/0!",]
@@ -44,8 +43,8 @@ ggplot(StBPT, aes(Column, -Row)) +
                           values = c("(-Inf,-1]" = "green","(-1,1]" = "yellow","(1, Inf]" = "purple"),
                           labels = c("Deposit on EOI", "EOI", "EOI will move to"))+
         geom_text(aes(label=ElementSymbol))+
-        geom_text(aes(label=format(ELdGmCl/1000,digits=2)),vjust=3,hjust=.5,size=3)+
-        geom_text(aes(label=Species),vjust=-2,hjust=.5,size=3)+
+        geom_text(aes(label=format(ELdGmCl/1000,digits=2)),vjust=3,hjust=.5,size=1.8)+
+        geom_text(aes(label=Species),vjust=-2,hjust=.5,size=1.8)+
         labs(x="",y="")+
         theme(
                 axis.text.x = element_blank(),
