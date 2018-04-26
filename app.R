@@ -1,5 +1,4 @@
 library(shiny)
-library(lubridate)
 library(ggplot2)
 library(httr)
 library(data.table)
@@ -29,6 +28,7 @@ BPTNA<-data.table(BPTNA)
 BPTT<-BPTNA[!is.na(BPTNA$TC),]
 BPTT<-BPTT[!is.na(BPTT$dGmCl),]
 BPTT<-BPTT[BPTT$dGmCl!="#DIV/0!",]
+BPT<-BPTT[BPTT$TK==1223,]
 
 ##ShinyAPP
 ui<-fluidPage(
